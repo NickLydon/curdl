@@ -21,7 +21,7 @@ const trie = new Promise<Trie>(async (resolve) => {
   }
 })
 
-type PartialsResponse = {
+export type PartialsResponse = {
   partials: string[]
 }
 
@@ -30,6 +30,9 @@ export default async function handler(
   res: NextApiResponse<PartialsResponse>
 ) {
   const t = await trie;
-  const input = req.query['input']
-  res.status(200).json({ partials: Array.from(t.matchingPartial(input instanceof Array ? input : [input]))})
+  const partials: string[] = req.body.partials.flatMap((partial: string[]) => Array.from(t.matchingPartial(partial)))
+  const dedupe: {[key: string]: boolean} = {}
+  partials.forEach(p => dedupe[p] = true)
+
+  res.status(200).json({ partials: Object.keys(dedupe) })
 }
