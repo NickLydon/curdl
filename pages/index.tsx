@@ -3,7 +3,6 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
-import styles2 from '../styles/index.module.css'
 import {PartialsResponse} from '../pages/api/partials'
 
 const Home: NextPage = () => {
@@ -50,10 +49,10 @@ const Home: NextPage = () => {
             new Array(5).fill(0).map((_, i) =>
               (
                 <div key={i}>
-                  <input type='text' maxLength={1}  className={styles2['letter-state-' + inPositionState[i]]} onChange={elem =>
+                  <input type='text' maxLength={1}  className={styles['letter-state-' + inPositionState[i]]} onChange={elem =>
                      setLettersState(letters.map((x, i2) => i === i2 ? elem.target.value : x))
                     } />
-                  <input type='button' className={styles2['letter-state-' + !inPositionState[i]]}  onClick={() =>
+                  <input type='button' className={styles['letter-state-' + !inPositionState[i]]}  onClick={() =>
                     setInPositionState(
                       inPositionState.map((x, i2) => i === i2 ? !x : x)
                     )

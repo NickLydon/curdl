@@ -114,3 +114,10 @@
     flex-direction: column;
   }
 }
+
+input.letter-state-false {
+  background-color: orange;
+}
+input.letter-state-true {
+  background-color: green;
+}
