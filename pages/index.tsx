@@ -1,9 +1,41 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
+import { useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
+import styles2 from '../styles/index.module.css'
+import {PartialsResponse} from '../pages/api/partials'
 
 const Home: NextPage = () => {
+  const [letters, setLettersState] = useState(new Array(5).fill(''))
+  const [inPositionState, setInPositionState] = useState(new Array(5).fill(false))
+  const [partialMatchState, setPartialMatchState] = useState([] as string[])
+  const [loadingState, setLoadingState] = useState(false)
+  useEffect(() => {
+    if (letters.every(letter => letter === '')) return
+    const controller = new AbortController()
+    const f = async () => {
+      try {
+        setLoadingState(true)
+        const partials = letters.map((letter, index) => ({letter, inPosition: inPositionState[index]}))          
+        const result = await fetch('/api/partials', {          
+          method: 'POST',        
+          headers: {
+            'Content-Type': 'application/json'
+          },  
+          body: JSON.stringify({ partials: partials }),
+          signal: controller.signal
+        })
+        const json: PartialsResponse = await result.json()
+        setPartialMatchState(json.partials)
+      } finally {
+        setLoadingState(false)
+      }
+    }
+    f()
+    return () => { controller.abort() }
+  }, [letters, inPositionState])
+
   return (
     <div className={styles.container}>
       <Head>
@@ -13,47 +45,34 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+        <div>
+          {
+            new Array(5).fill(0).map((_, i) =>
+              (
+                <div key={i}>
+                  <input type='text' maxLength={1}  className={styles2['letter-state-' + inPositionState[i]]} onChange={elem =>
+                     setLettersState(letters.map((x, i2) => i === i2 ? elem.target.value : x))
+                    } />
+                  <input type='button' className={styles2['letter-state-' + !inPositionState[i]]}  onClick={() =>
+                    setInPositionState(
+                      inPositionState.map((x, i2) => i === i2 ? !x : x)
+                    )
+                  } />
+                </div>
+              )
+            )
+          }
+        </div>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.tsx</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+        <div>
+          <h2>Partial matches {loadingState ? '(loading)' : ''} </h2>
+          {
+            partialMatchState.map(pm => <p key={pm}>{pm}</p>)
+          }
         </div>
       </main>
 
-      <footer className={styles.footer}>
+      <footer className={styles.footer}>        
         <a
           href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
           target="_blank"
