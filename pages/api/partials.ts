@@ -29,10 +29,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<PartialsResponse>
 ) {
-  const t = await trie;
-  const partials: string[] = req.body.partials.flatMap((partial: string[]) => Array.from(t.matchingPartial(partial)))
-  const dedupe: {[key: string]: boolean} = {}
-  partials.forEach(p => dedupe[p] = true)
-
-  res.status(200).json({ partials: Object.keys(dedupe) })
+  const t = await trie
+  const partial: {letter:string, inPosition:boolean}[] = req.body.partials
+  const partials: string[] = Array.from(t.matchingPartial(partial))
+  
+  res.status(200).json({ partials })
 }

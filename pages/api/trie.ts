@@ -36,20 +36,20 @@ export default class Trie {
         child.setWord(word.substring(1))
     }
 
-    *matchingPartial(partial: string[], match = ''): Iterable<string> {
-        if (partial.length === 0) {
-            if (this.isWord) yield match
+    *matchingPartial(partial: {letter: string, inPosition: boolean}[], index = 0, match = ''): Iterable<string> {
+        if (index >= partial.length) {
+            if (this.isWord && partial.every(({letter}) => match.includes(letter))) yield match
             return
         }
 
-        const head = partial[0]
-        const children = head === ''
+        const {letter, inPosition} = partial[index]
+        const children = letter === '' || !inPosition
             ? this.data.map((trie, index) => ({ trie, index }))
-            : [{ index: this.getIndex(head), trie: this.getChild(head) }]
+            : [{ index: this.getIndex(letter), trie: this.getChild(letter) }]
 
         for (const child of children) {            
             if (child?.trie === undefined) continue
-            yield* child.trie.matchingPartial(partial.slice(1), match + this.getChar(child.index))
+            yield* child.trie.matchingPartial(partial, index + 1, match + this.getChar(child.index))
         }
     }
 }

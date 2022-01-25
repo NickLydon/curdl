@@ -32,7 +32,7 @@ describe(Trie.name, () => {
             {input: ['', '', ''], expected: ['app', 'cap', 'map']},
         ].forEach(w => {
             it(`finds partial matches for [${w.input}]`, () => {
-                expect(Array.from(trie.matchingPartial(w.input))).toStrictEqual(w.expected)
+                expect(Array.from(trie.matchingPartial(w.input.map(letter => ({letter, inPosition: true}))))).toStrictEqual(w.expected)
             });
         });
     })
